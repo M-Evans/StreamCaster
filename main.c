@@ -7,7 +7,8 @@
 int main() {
     //char** channels = get_channels()
     
-    fetch("example.com");
+    fetch("somafm.com");
+    //fetch("example.com");
     
     return 0;
 }

@@ -7,16 +7,15 @@
       _a > _b ? _a : _b;})
 
 
-struct nq* nq_init(int sock) {
+struct nq* nq_init(int sock, int size) {
     struct nq *ret = malloc(sizeof(struct nq));
     ret->sz = 0;
-    ret->cap = NETQ_SIZE;
+    ret->cap = size;
     ret->sock = sock;
-    ret->begin = ret->end = ret->data = malloc(NETQ_SIZE);
+    ret->begin = ret->end = ret->data = malloc(size);
     return ret;
 }
 
-//recv(s, rcv+pos, HTTP_MAX_PAGE_SIZE_ALLOWED-pos, 0)
 void nq_pull(struct nq* q) {
     int got;
     int left = min(q->data + q->cap - q->end, q->cap - q->sz);
@@ -24,10 +23,13 @@ void nq_pull(struct nq* q) {
         perror("recv");
         exit(1);
     }
+printf("==== got %d from recv ====\n", got);
     q->sz += got;
     if (q->sz == q->cap) {
+printf("==== full q. setting end pointer to begin pointer ====\n");
         q->end = q->begin;
     } else if (got == left) {
+printf("==== got what was left. wrapping end pointer around ====\n");
         q->end = q->data;
     }
 }
@@ -39,9 +41,11 @@ int nq_pop(struct nq* q, char* dst, int sz) {
 int nq_pop_until(struct nq* q, char* dst, int sz, int c) {
     int i;
     unsigned char next;
+printf("==== q size: %d/%d ====\n", q->sz, q->cap);
     for (i = 0; i < sz; ++i) {
         if (q->sz == 0) {
             nq_pull(q);
+printf("==== q size: %d/%d ====\n", q->sz, q->cap);
             if (q->sz == 0) {
                 return i;
             }

@@ -56,7 +56,7 @@ char* fetch(const char* url) {
     printf("got:\n===========================\n"); fflush(stdout);
 
     char* buf = malloc(HTTP_BUFSIZE);
-    struct nq* q = nq_init(s);
+    struct nq* q = nq_init(s, 8192);
     int sz;
     while ((sz = nq_pop_until(q, buf, HTTP_BUFSIZE-1, '\n')) > 0) {
         buf[sz] = 0;
@@ -97,7 +97,7 @@ ebd\r\n
 
 void http_strip_response_header(int s) {
     char* buf = malloc(HTTP_BUFSIZE);
-    struct nq* q = nq_init(s);
+    struct nq* q = nq_init(s, 8192);
     int sz;
     while ((sz = nq_pop_until(q, buf, HTTP_BUFSIZE, '\n')) > 2);
     free(buf);
@@ -113,7 +113,7 @@ void http_decode(int s, char** dst) {
     http_strip_response_header(s);
 
     char* buf = malloc(HTTP_BUFSIZE);
-    struct nq* q = nq_init(s);
+    struct nq* q = nq_init(s, 8192);
     int sz;
 
     struct http_chunk *p, *head = malloc(sizeof(struct http_chunk));
